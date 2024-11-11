@@ -14,7 +14,7 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
   const [userFormData, setUserFormData] = useState<User>({ username: '', email: '', password: '', savedBooks: [] });
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [login, { error}] = useMutation(LOGIN_USER);
+  const [login] = useMutation(LOGIN_USER);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -87,11 +87,7 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
           variant='success'>
           Submit
         </Button>
-        {error && (
-              <div className="my-3 p-3 bg-danger text-white">
-                {error.message}
-              </div>
-         )}
+
       </Form>
     </>
   );

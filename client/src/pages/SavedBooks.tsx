@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Container, Card, Button, Row, Col } from 'react-bootstrap';
 
-import { getMe, deleteBook } from '../utils/API';
+// import {  deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 import type { User } from '../models/User';
+import { useQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
+import { QUERY_USER } from '../utils/queries';
+import { DELETE_BOOK } from '../utils/mutations';
 
 const SavedBooks = () => {
   const [userData, setUserData] = useState<User>({
@@ -16,6 +20,7 @@ const SavedBooks = () => {
 
   // use this to determine if `useEffect()` hook needs to run again
   const userDataLength = Object.keys(userData).length;
+  const [deleteBook] = useMutation(DELETE_BOOK);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -25,15 +30,14 @@ const SavedBooks = () => {
         if (!token) {
           return false;
         }
+        const { data } = useQuery(QUERY_USER,{
+          variables: { username: Auth.getProfile() }
 
-        const response = await getMe(token);
+      });
+        // const response = await getMe(token);
 
-        if (!response.ok) {
-          throw new Error('something went wrong!');
-        }
-
-        const user = await response.json();
-        setUserData(user);
+ 
+        setUserData(data);
       } catch (err) {
         console.error(err);
       }
@@ -51,14 +55,11 @@ const SavedBooks = () => {
     }
 
     try {
-      const response = await deleteBook(bookId, token);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
+        const { data } = await deleteBook({
+          variables: { bookId:bookId },
+        });
+  
+      setUserData(data);
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
