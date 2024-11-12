@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useEffect } from 'react';
 import { Container, Card, Button, Row, Col } from 'react-bootstrap';
 
 // import {  deleteBook } from '../utils/API';
@@ -10,6 +11,7 @@ import { useMutation } from '@apollo/client';
 import { QUERY_USER } from '../utils/queries';
 import { DELETE_BOOK } from '../utils/mutations';
 
+
 const SavedBooks = () => {
   const [userData, setUserData] = useState<User>({
     username: '',
@@ -17,34 +19,24 @@ const SavedBooks = () => {
     password: '',
     savedBooks: [],
   });
-
-  // use this to determine if `useEffect()` hook needs to run again
-  const userDataLength = Object.keys(userData).length;
-  const [deleteBook] = useMutation(DELETE_BOOK);
-
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-        if (!token) {
-          return false;
-        }
-        const { data } = useQuery(QUERY_USER,{
-          variables: { username: Auth.getProfile() }
-
-      });
-        // const response = await getMe(token);
+ 
 
  
-        setUserData(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  const [deleteBook] = useMutation(DELETE_BOOK);
+  const { data } = useQuery(QUERY_USER,{
+    variables: { username: Auth.getProfile().data.username },
+  });
+ 
+  const getUserData = async ()=>{
+    
+    setUserData(data?.user);
+   
+  }
+  useEffect(() => {
+   
+      getUserData();  
+  });
 
-    getUserData();
-  }, [userDataLength]);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId: string) => {
@@ -55,20 +47,20 @@ const SavedBooks = () => {
     }
 
     try {
-        const { data } = await deleteBook({
+         await deleteBook({
           variables: { bookId:bookId },
         });
+         
+         // upon success, remove book's id from localStorage
+         removeBookId(bookId);
   
-      setUserData(data);
-      // upon success, remove book's id from localStorage
-      removeBookId(bookId);
     } catch (err) {
       console.error(err);
     }
   };
 
   // if data isn't here yet, say so
-  if (!userDataLength) {
+  if (!userData) {
     return <h2>LOADING...</h2>;
   }
 
@@ -92,7 +84,7 @@ const SavedBooks = () => {
             : 'You have no saved books!'}
         </h2>
         <Row>
-          {userData.savedBooks.map((book) => {
+          {userData.savedBooks.map((book:any) => {
             return (
               <Col md='4'>
                 <Card key={book.bookId} border='dark'>

@@ -52,6 +52,7 @@ const resolvers = {
 
     addUser: async (_parent: any, { input }: AddUserArgs) => {
       // Create a new user with the provided username, email, and password
+    
       const user = await User.create({ ...input });
     
       // Sign a token with the user's information
@@ -85,13 +86,17 @@ const resolvers = {
     },
     
     saveBook: async (_parent: any, { input }: saveBookArgs, context: any) => {
-
+      // console.log("========");
+      // console.table(context.user);
+      // console.log("========");
+      
       if (context.user) {
        
 
         const user = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $addToSet: { savedBooks: input } }
+          { $addToSet: { savedBooks: input } },
+          {new:true}
         );
 
         return user;
@@ -99,13 +104,15 @@ const resolvers = {
       throw new AuthenticationError('You need to be logged in!');
     },
     deleteBook: async (_parent: any, { bookId }: deletebookArg, context: any) => {
+      console.log(context.user);
       
       if (context.user) {
        
 
         const user = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: {bookId:bookId }} }
+          { $pull: { savedBooks: {bookId:bookId }} },
+          {new:true}
         );
 
         return user;

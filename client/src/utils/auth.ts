@@ -9,7 +9,7 @@ interface UserToken {
 // create a new class to instantiate for a user
 class AuthService {
   // get user data
-  getProfile() {
+  getProfile():any {
     return jwtDecode(this.getToken() || '');
   }
 

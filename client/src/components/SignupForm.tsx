@@ -7,6 +7,7 @@ import Auth from '../utils/auth';
 import type { User } from '../models/User';
 import { useMutation } from '@apollo/client';
 import { ADD_USER } from '../utils/mutations';
+import { saveBookIds } from '../utils/localStorage';
 
 // biome-ignore lint/correctness/noEmptyPattern: <explanation>
 const SignupForm = ({}: { handleModalClose: () => void }) => {
@@ -16,7 +17,7 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
   const [validated] = useState(false);
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
-  const [signUp] = useMutation(ADD_USER);
+  const [addUser] = useMutation(ADD_USER);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -34,11 +35,12 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
     }
 
     try {
-        const { data } = await signUp({
-          variables: { input:userFormData },
+        const { data } = await addUser({
+          variables: { input:{username:userFormData.username,email:userFormData.email,password:userFormData.password} },
         });
-
-        Auth.login(data.login.token);
+        // console.log(data);
+        Auth.login(data.addUser.token);
+       
     } catch (err) {
       console.error(err);
       setShowAlert(true);
